@@ -15,7 +15,6 @@
 
 <script>
 import { mapGetters, mapState, mapActions, mapMutations } from "vuex";
-import axios from "axios";
 
 export default {
     data() {
@@ -31,18 +30,33 @@ export default {
             Auth: "auth/Auth",
         }),
         async Login() {
-            let response;
             try {
-                //console.log(this.username, this.password)
-                response = await axios.post("http://localhost:5000/auth/login", {
-                    username: this.username,
-                    password: this.password,
+                //console.log(this.username, this.password);
+
+                const res = await fetch("http://localhost:5000/auth/login", {
+                    method: "POST",
+                    cors: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: this.username,
+                        password: this.password,
+                    }),
                 });
+
+                const response = await res.json();
+
+                if (response.error) {
+                    this.error = response.error.message;
+                    this.isBadLogin = true;
+                    return;
+                }
 
                 //console.log(response)
                 this.Auth({
                     isAuth: true,
-                    token: response.data.token,
+                    token: response.token,
                     username: this.username,
                 });
 
@@ -50,9 +64,7 @@ export default {
 
                 this.$router.push("/");
             } catch (e) {
-                console.log(e.response.data);
-                this.isBadLogin = true;
-                this.error = e.response.data.error.message;
+                console.error(e);
             }
         },
     },
