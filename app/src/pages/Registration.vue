@@ -27,22 +27,33 @@ export default {
     },
     methods: {
         async Registration() {
-            let response;
             try {
-                console.log(this.username, this.password);
-                response = await axios.post("http://localhost:5000/auth/registration", {
-                    username: this.username,
-                    password: this.password,
+                const res = await fetch("http://localhost:5000/auth/registration", {
+                    method: "POST",
+                    cors: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: this.username,
+                        password: this.password,
+                    }),
                 });
+
+                const response = await res.json();
+
+                if (response.error) {
+                    this.isBadLogin = true;
+                    this.error = response.error.message;
+                    return;
+                }
 
                 //console.log(response)
                 this.isBadLogin = false;
 
                 this.$router.push("/registration/success");
             } catch (e) {
-                console.log(e.response.data);
-                this.isBadLogin = true;
-                this.error = e.response.data.error.message;
+                console.log(e);
             }
         },
     },
